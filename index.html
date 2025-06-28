@@ -2,24 +2,62 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tagebuch des Hirten</title>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #181818;
+      --bg-color: #000000;
       --text-color: #f1f1f1;
       --accent-color: #d4af37;
+      --accent-hover: #e8c96a;
+      --card-bg: #121212;
+      --card-border: #333333;
+      --overlay: rgba(0, 0, 0, 0.7);
     }
-
+    
+    * {
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    
     body {
       background-color: var(--bg-color);
       color: var(--text-color);
       font-family: Georgia, serif;
-      max-width: 1000px;
-      margin: 4em auto;
-      padding: 0 1em;
+      margin: 0;
+      padding: 4em 1.5em 2em;
+      line-height: 1.6;
+      min-height: 100vh;
     }
-
+    
+    #scrollTopBtn {
+      position: fixed;
+      bottom: 40px;
+      right: 30px;
+      display: none;
+      z-index: 99;
+      font-size: 18px;
+      border: none;
+      outline: none;
+      background-color: var(--accent-color);
+      color: var(--bg-color);
+      cursor: pointer;
+      padding: 12px 15px;
+      border-radius: 50%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    
+    #scrollTopBtn:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-3px);
+    }
+    
+    #scrollTopBtn:active {
+      transform: translateY(0) scale(0.95);
+    }
+    
     h1 {
       font-family: 'UnifrakturCook', serif;
       color: var(--accent-color);
@@ -27,49 +65,58 @@
       font-size: 3em;
       margin-bottom: 1em;
     }
-
+    
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 2em;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-
+    
     .card {
-      background-color: #222;
-      border: 1px solid #333;
-      border-radius: 8px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
       overflow: hidden;
-      transition: transform 0.2s;
       text-decoration: none;
       color: inherit;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
     }
-
+    
     .card:hover {
-      transform: scale(1.02);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2);
     }
-
+    
+    .card:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
     .card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
+      border-bottom: 1px solid var(--card-border);
     }
-
+    
     .card-content {
-      padding: 1em;
+      padding: 1.5em;
     }
-
+    
     .card-title {
       font-family: 'UnifrakturCook', serif;
       font-size: 1.4em;
       margin: 0 0 0.5em 0;
       color: var(--accent-color);
     }
-
+    
     .card-text {
       font-size: 0.95em;
       color: #ccc;
     }
-
+    
     #sidebarToggle {
       position: fixed;
       top: 1em;
@@ -80,73 +127,139 @@
       color: var(--accent-color);
       background-color: transparent;
       border: none;
+      transition: transform 0.3s ease;
     }
-
+    
+    #sidebarToggle:hover {
+      transform: scale(1.1);
+    }
+    
+    #sidebarToggle:active {
+      transform: scale(0.95);
+    }
+    
     .sidebar {
       position: fixed;
       top: 0;
-      left: 0;
-      width: 180px;
+      left: -250px;
+      width: 250px;
       height: 100%;
       background-color: #121212;
-      padding-top: 3em;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+      padding-top: 4em;
+      box-shadow: 2px 0 15px rgba(0,0,0,0.5);
+      transition: left 0.4s ease;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      transition: left 0.4s ease;
+      border-right: 1px solid var(--accent-color);
     }
-
+    
     .sidebar a {
-      padding: 1em;
+      padding: 1.2em 1.5em;
       text-decoration: none;
       color: var(--accent-color);
       font-family: 'UnifrakturCook', serif;
       border-bottom: 1px solid #333;
-      transition: background-color 0.2s;
+      transition: all 0.3s ease;
+      font-size: 1.2em;
     }
-
+    
     .sidebar a:hover {
       background-color: #1e1e1e;
+      padding-left: 2em;
     }
-
-    .sidebar.closed {
-      left: -200px;
+    
+    .sidebar.open {
+      left: 0;
     }
-
+    
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--overlay);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
     .main-content {
-      margin-left: 200px;
+      margin-left: 0;
+      padding-top: 1em;
     }
-
-    @media screen and (max-width: 768px) {
-      .sidebar {
-        left: -200px;
+    
+    @media (max-width: 768px) {
+      body {
+        padding-top: 6em;
       }
-
+      
+      h1 {
+        font-size: 2.5em;
+      }
+      
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        left: -250px;
+      }
+      
       .sidebar.open {
         left: 0;
       }
-
-      .main-content {
-        margin-left: 0;
+      
+      #scrollTopBtn {
+        padding: 10px;
+        font-size: 16px;
+        right: 20px;
+        bottom: 20px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2em;
+      }
+      
+      .card {
+        padding: 1em;
+      }
+      
+      .card-content {
+        padding: 1em;
       }
     }
   </style>
 </head>
 <body>
-  <button id="sidebarToggle" onclick="toggleSidebar()">☰</button>
-
+  <div id="sidebarToggle" onclick="toggleSidebar()">☰</div>
   <div id="sidebar" class="sidebar">
     <a href="https://el-es-deh.github.io/Blog/index.html">Blog</a>
     <a href="https://el-es-deh.github.io/Newsletter/">Newsletter</a>
     <a href="https://el-es-deh.github.io/Impressum/">Impressum</a>
   </div>
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Nach oben">⬆</button>
 
   <div class="main-content">
     <h1>Tagebuch des Hirten</h1>
 
     <div class="card-grid">
-
       <!-- Beispiel-Beitrag -->
       <a href="https://el-es-deh.github.io/Blog/GutenAbendAlter.html" class="card">
         <div class="card-content">
@@ -154,14 +267,33 @@
           <div class="card-text"> </div>
         </div>
       </a>
-
     </div>
   </div>
 
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
       sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    window.onscroll = function() {
+      const btn = document.getElementById("scrollTopBtn");
+      if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+        btn.style.display = "block";
+      } else {
+        btn.style.display = "none";
+      }
+    };
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Initialize sidebar state for mobile
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('open');
     }
   </script>
 </body>
